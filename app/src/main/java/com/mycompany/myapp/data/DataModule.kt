@@ -1,87 +1,62 @@
 package com.mycompany.myapp.data
 
-import android.app.Application
-import android.content.Context
+
 import com.mycompany.myapp.app.Settings
 import com.mycompany.myapp.data.api.github.GitHubApiService
 import com.mycompany.myapp.data.api.github.GitHubInteractor
 import com.squareup.moshi.Moshi
-import dagger.Module
-import dagger.Provides
+
 import okhttp3.Cache
 import okhttp3.OkHttpClient
-import retrofit2.Converter
+import org.koin.android.ext.koin.androidApplication
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.qualifier.named
+import org.koin.dsl.module
 import retrofit2.Retrofit
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.io.File
-import javax.inject.Singleton
 
 interface OkHttpSecurityModifier {
     fun apply(builder: OkHttpClient.Builder)
 }
 
-@Module
-class DataModule {
+val DataModule = module {
 
-    @Singleton
-    @Provides
-    fun provideCache(app: Application): Cache {
-        val cacheDir = File(app.cacheDir, "http")
-        return Cache(cacheDir, DISK_CACHE_SIZE.toLong())
+    single {
+        val cacheDir = File(androidApplication().cacheDir, "http")
+        Cache(cacheDir, get<Long>(named("diskCacheSize")).toLong())
     }
 
-    @Singleton
-    @Provides
-    fun provideOkHttpClient(cache: Cache, securityModifier: OkHttpSecurityModifier): OkHttpClient {
+    single {
         val builder = OkHttpClient.Builder()
-        builder.cache(cache)
-        securityModifier.apply(builder)
-        return builder.build()
+        builder.cache(get())
+        get<OkHttpSecurityModifier>().apply(builder)
+        builder.build()
     }
 
-    @Singleton
-    @Provides
-    fun provideBaseUrl(settings: Settings): String {
-        return settings.baseUrl
+    single(named("baseUrl")) {
+        get<Settings>().baseUrl
     }
 
-    @Singleton
-    @Provides
-    fun provideConverter(): Converter.Factory {
+    single {
         val moshi = Moshi.Builder().build()
-        return MoshiConverterFactory.create(moshi)
+        MoshiConverterFactory.create(moshi)
     }
 
-    @Singleton
-    @Provides
-    fun provideRetrofit(
-            client: OkHttpClient,
-            baseUrl: String,
-            converterFactory: Converter.Factory): Retrofit {
-        return Retrofit.Builder()
-                .client(client)
-                .baseUrl(baseUrl)
-                .addConverterFactory(converterFactory)
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+    single {
+        Retrofit.Builder()
+                .client(get())
+                .baseUrl(get<String>(named("baseUrl")))
+                .addConverterFactory(get())
                 .build()
     }
 
-    @Singleton
-    @Provides
-    fun provideGitHubApiService(retrofit: Retrofit): GitHubApiService {
-        return retrofit.create(GitHubApiService::class.java)
-    }
+    single { get<Retrofit>().create(GitHubApiService::class.java) }
 
-    @Singleton
-    @Provides
-    fun provideGitHubService(
-            context: Context,
-            api: GitHubApiService): GitHubInteractor {
-        return GitHubInteractor(context, api)
-    }
+    single { GitHubInteractor(androidContext(), get()) }
 
-    companion object {
-        private const val DISK_CACHE_SIZE = 50 * 1024 * 1024 // 50MB
+    single(named("diskCacheSize")) {
+        // 50 MB
+        (50 * 1024 * 1024).toLong()
     }
 }
