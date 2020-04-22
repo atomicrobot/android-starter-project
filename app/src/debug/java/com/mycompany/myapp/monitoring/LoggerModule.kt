@@ -1,14 +1,10 @@
 package com.mycompany.myapp.monitoring
 
-import dagger.Module
-import dagger.Provides
+
+import org.koin.dsl.module
 import timber.log.Timber
 import timber.log.Timber.DebugTree
-import javax.inject.Singleton
 
-@Module
-class LoggerModule {
-    @Singleton
-    @Provides
-    fun provideTimberTree() : Timber.Tree = DebugTree()
+val LoggerModule = module {
+    single<Timber.Tree> { DebugTree() }
 }

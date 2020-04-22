@@ -4,6 +4,7 @@ import android.app.Application
 import android.os.Parcelable
 import androidx.annotation.VisibleForTesting
 import androidx.databinding.Bindable
+import androidx.lifecycle.viewModelScope
 import com.mycompany.myapp.BR
 import com.mycompany.myapp.BuildConfig
 import com.mycompany.myapp.R
@@ -12,29 +13,22 @@ import com.mycompany.myapp.data.api.github.GitHubInteractor.LoadCommitsRequest
 import com.mycompany.myapp.data.api.github.model.Commit
 import com.mycompany.myapp.ui.BaseViewModel
 import com.mycompany.myapp.ui.SimpleSnackbarMessage
-import com.mycompany.myapp.util.RxUtils.delayAtLeast
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import com.mycompany.myapp.util.state.AsyncState
+import com.mycompany.myapp.util.state.Event
 import kotlinx.android.parcel.Parcelize
-import javax.inject.Inject
-import javax.inject.Named
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-class MainViewModel @Inject constructor(
+class MainViewModel(
         private val app: Application,
         private val gitHubInteractor: GitHubInteractor,
-        @Named("loading_delay_ms") private val loadingDelayMs: Long)
-    : BaseViewModel<MainViewModel.State>(app, STATE_KEY, State()) {
+        private val loadingDelayMs: Long
+) : BaseViewModel<MainViewModel.State>(app, STATE_KEY, State()) {
 
     @Parcelize
     class State(
             var username: String = "",
             var repository: String = "") : Parcelable
-
-    sealed class Commits {
-        class Loading : Commits()
-        class Result(val commits: List<Commit>) : Commits()
-        class Error(val message: String) : Commits()
-    }
 
     override fun setupViewModel() {
         username = "madebyatomicrobot"  // NON-NLS
@@ -44,7 +38,7 @@ class MainViewModel @Inject constructor(
     }
 
     @VisibleForTesting
-    internal var commits: Commits = Commits.Result(emptyList())
+    internal var commits: AsyncState<List<Commit>> = AsyncState.Idle
         set(value) {
             field = value
 
@@ -53,7 +47,7 @@ class MainViewModel @Inject constructor(
             notifyPropertyChanged(BR.fetchCommitsEnabled)
 
             when (value) {
-                is Commits.Error -> snackbarMessage.value = value.message
+                is AsyncState.Fail -> snackbarMessage.value = Event(value.throwable.message ?: "Some Default Message")
             }
         }
 
@@ -74,15 +68,15 @@ class MainViewModel @Inject constructor(
         }
 
     @Bindable("username", "repository")
-    fun isFetchCommitsEnabled(): Boolean = commits !is Commits.Loading && !username.isEmpty() && !repository.isEmpty()
+    fun isFetchCommitsEnabled(): Boolean = commits !is AsyncState.Loading && !username.isEmpty() && !repository.isEmpty()
 
     @Bindable
-    fun isLoading(): Boolean = commits is Commits.Loading
+    fun isLoading(): Boolean = commits is AsyncState.Loading
 
     @Bindable
     fun getCommits() = commits.let {
         when (it) {
-            is Commits.Result -> it.commits
+            is AsyncState.Success -> it.value
             else -> emptyList()
         }
     }
@@ -92,14 +86,16 @@ class MainViewModel @Inject constructor(
     fun getFingerprint(): String = BuildConfig.VERSION_FINGERPRINT
 
     fun fetchCommits() {
-        commits = Commits.Loading()
-        disposables.add(delayAtLeast(gitHubInteractor.loadCommits(LoadCommitsRequest(username, repository)), loadingDelayMs)
-                .map { it.commits }  // Pull the commits out of the response
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        { commits = Commits.Result(it) },
-                        { commits = Commits.Error(it.message ?: app.getString(R.string.error_unexpected)) }))
+        commits = AsyncState.Loading
+        viewModelScope.launch {
+            delay(loadingDelayMs)
+            val result = gitHubInteractor.loadCommits(LoadCommitsRequest(username, repository))
+            result.fold({
+                commits = AsyncState.Success(it.commits)
+            }, {
+                commits = AsyncState.Fail(it)
+            })
+        }
     }
 
     companion object {

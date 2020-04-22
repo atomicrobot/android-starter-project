@@ -7,9 +7,8 @@ import com.mycompany.myapp.BR
 import com.mycompany.myapp.app.Settings
 import com.mycompany.myapp.ui.BaseViewModel
 import kotlinx.android.parcel.Parcelize
-import javax.inject.Inject
 
-class DevSettingsViewModel @Inject constructor(
+class DevSettingsViewModel (
         private val app: Application,
         private val settings: Settings)
     : BaseViewModel<DevSettingsViewModel.State>(app, STATE_KEY, State()) {

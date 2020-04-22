@@ -7,17 +7,15 @@ import androidx.databinding.DataBindingUtil
 import com.mycompany.myapp.R
 import com.mycompany.myapp.ui.BaseActivity
 import com.mycompany.myapp.ui.devsettings.DevSettingsFragment.DevSettingsFragmentHost
-import javax.inject.Inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class DevSettingsActivity : BaseActivity(), DevSettingsFragmentHost {
-    @Inject lateinit var viewModel: DevSettingsViewModel
+    val viewModel: DevSettingsViewModel by viewModel()
     private lateinit var binding: DevSettingsActivityBinding
 
     public override fun onCreate(savedInstanceState: Bundle?) {
-        appComponent.inject(this)
         super.onCreate(savedInstanceState)
 
-        viewModel = getViewModel(DevSettingsViewModel::class)
         viewModel.restoreState(savedInstanceState)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_dev_settings)

@@ -12,6 +12,7 @@ import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.io.File
@@ -38,7 +39,7 @@ val DataModule = module {
         get<Settings>().baseUrl
     }
 
-    single {
+    single<Converter.Factory> {
         val moshi = Moshi.Builder().build()
         MoshiConverterFactory.create(moshi)
     }

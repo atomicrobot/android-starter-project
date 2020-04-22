@@ -7,16 +7,14 @@ import com.mycompany.myapp.R
 import com.mycompany.myapp.ui.BaseActivity
 import com.mycompany.myapp.ui.SimpleSnackbarMessage
 import com.mycompany.myapp.ui.main.MainFragment.MainFragmentHost
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : BaseActivity(), MainFragmentHost {
-    private lateinit var viewModel: MainViewModel
+    private val viewModel: MainViewModel by viewModel()
     private lateinit var binding: MainActivityBinding
 
     public override fun onCreate(savedInstanceState: Bundle?) {
-        appComponent.inject(this)
         super.onCreate(savedInstanceState)
-
-        viewModel = getViewModel(MainViewModel::class)
         viewModel.restoreState(savedInstanceState)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)

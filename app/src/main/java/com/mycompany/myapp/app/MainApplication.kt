@@ -1,19 +1,26 @@
 package com.mycompany.myapp.app
 
 import android.app.Application
-import androidx.annotation.VisibleForTesting
-
-import javax.inject.Inject
+import com.mycompany.myapp.data.DataModule
+import com.mycompany.myapp.modules.CrashReporterModule
+import com.mycompany.myapp.monitoring.LoggerModule
+import com.mycompany.myapp.ui.ViewModelModule
+import org.koin.android.ext.android.inject
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.startKoin
 
 open class MainApplication : Application() {
-    @set:VisibleForTesting
 
-    @Inject lateinit var initializer: MainApplicationInitializer
+    val initializer: MainApplicationInitializer by inject()
 
     override fun onCreate() {
         super.onCreate()
 
-        component.inject(this)
+        startKoin {
+            androidContext(this@MainApplication)
+
+            modules(LoggerModule, VariantModule, CrashReporterModule, DataModule, ViewModelModule)
+        }
 
         initializeApplication()
     }

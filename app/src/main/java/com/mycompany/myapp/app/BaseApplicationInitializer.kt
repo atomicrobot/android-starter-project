@@ -13,7 +13,8 @@ import timber.log.Timber.Tree
 
 abstract class BaseApplicationInitializer(
         protected val application: Application,
-        private val logger: Tree) {
+        private val logger: Tree
+) {
 
     open fun initialize() {
         LeakCanary.install(application)

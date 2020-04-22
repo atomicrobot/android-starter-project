@@ -13,11 +13,12 @@ import com.mycompany.myapp.R
 import com.mycompany.myapp.data.api.github.model.Commit
 import com.mycompany.myapp.ui.BaseFragment
 import com.mycompany.myapp.util.recyclerview.ArrayAdapter
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainFragment : BaseFragment() {
     interface MainFragmentHost
 
-    private lateinit var viewModel: MainViewModel
+    private val viewModel: MainViewModel by viewModel()
     private lateinit var binding: MainFragmentBinding
     private var host: MainFragmentHost? = null
 
@@ -32,8 +33,6 @@ class MainFragment : BaseFragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        viewModel = getViewModel(MainViewModel::class)
-
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false)
         binding.vm = viewModel
 
@@ -62,8 +61,8 @@ class MainFragment : BaseFragment() {
     }
 
     private class CommitViewHolder(
-            private val binding: CommitItemBinding)
-        : RecyclerView.ViewHolder(binding.root) {
+            private val binding: CommitItemBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: Commit) {
             binding.item = item

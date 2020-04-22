@@ -6,14 +6,11 @@ import android.os.Parcelable
 import androidx.databinding.Observable
 import androidx.databinding.PropertyChangeRegistry
 import androidx.lifecycle.AndroidViewModel
-import io.reactivex.disposables.CompositeDisposable
 
 abstract class BaseViewModel<State : Parcelable>(
         app: Application,
         private val stateKey: String,
-        protected var state: State,
-        protected val disposables: CompositeDisposable = CompositeDisposable())
-    : AndroidViewModel(app), Observable {
+        protected var state: State) : AndroidViewModel(app), Observable {
 
     private var viewModelInitialized: Boolean = false
 
@@ -35,11 +32,6 @@ abstract class BaseViewModel<State : Parcelable>(
     }
 
     abstract fun setupViewModel()
-
-    override fun onCleared() {
-        disposables.dispose()
-        super.onCleared()
-    }
 
     /* Start of databinding behavior pillaged from BaseObservable */
 

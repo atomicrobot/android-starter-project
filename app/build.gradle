@@ -115,6 +115,10 @@ android {
             includeAndroidResources = true
         }
     }
+
+    kotlinOptions {
+        freeCompilerArgs = ["-Xallow-result-return-type"]
+    }
 }
 
 androidExtensions {
@@ -129,8 +133,8 @@ ext {
     // App dependency versions
     appCompatVersion = '1.1.0'
     playServicesVersion = '17.2.1'
-    retrofitVersion = '2.4.0'
-    okHttpVersion = '3.11.0'
+    retrofitVersion = '2.8.1'
+    okHttpVersion = '4.5.0'
     leakcanaryVersion = '1.6.3'
     lifecycleVersion = '2.2.0'
     koinVersion = '2.1.5'

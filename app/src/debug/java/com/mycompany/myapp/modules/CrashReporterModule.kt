@@ -1,13 +1,9 @@
 package com.mycompany.myapp.modules
 
+import com.mycompany.myapp.monitoring.CrashReporter
 import com.mycompany.myapp.monitoring.LoggingOnlyCrashReporter
-import dagger.Module
-import dagger.Provides
-import javax.inject.Singleton
+import org.koin.dsl.module
 
-@Module
-class CrashReporterModule {
-    @Singleton
-    @Provides
-    fun crashReporter() = LoggingOnlyCrashReporter()
+val CrashReporterModule = module {
+    single<CrashReporter> { LoggingOnlyCrashReporter() }
 }
