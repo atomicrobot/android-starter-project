@@ -8,7 +8,7 @@ buildscript {
     dependencies {
         classpath 'com.jakewharton.hugo:hugo-plugin:1.2.1'
 
-        classpath 'io.fabric.tools:gradle:1.26.1'
+        classpath 'io.fabric.tools:gradle:1.31.2'
         classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0'
     }
 }
@@ -26,7 +26,6 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'com.jakewharton.hugo'
 apply plugin: 'io.fabric'
 
-apply plugin: 'findbugs'
 apply plugin: 'pmd'
 apply plugin: 'checkstyle'
 apply plugin: 'jacoco'
@@ -216,22 +215,6 @@ dependencies {
     androidTestImplementation "io.mockk:mockk-android:1.9.3"
 
 
-}
-
-//TODO Replace FindBugs with SpotBugs
-//https://docs.gradle.org/current/userguide/findbugs_plugin.html
-//https://github.com/atomicrobot/Carbon-Android/issues/87
-task findbugs(type: FindBugs, dependsOn: "assembleDebug") {
-    excludeFilter file("${project.rootDir}/config/findbugs/exclude.xml")
-    classes = fileTree('build/intermediates/javac/devDebug/compileDevDebugJavaWithJavac/classes/')
-    source = fileTree('src/main/java/')
-    classpath = files()
-    effort = 'max'
-    reports {
-        xml.enabled = false
-        html.enabled = true
-        html.stylesheet resources.text.fromFile("${project.rootDir}/config/findbugs/customizations.xsl")
-    }
 }
 
 task pmd(type: Pmd, dependsOn: "assembleDebug") {
