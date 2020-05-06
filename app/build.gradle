@@ -270,12 +270,9 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDevDebugUnitTest', 'c
             /* Data binding */
             '**/*Binding*.*',
             '**/BR.**',
-            /* Dagger */
             '**/*_MembersInjector.*',
             '**/*_Factory.*',
             '**/*_*Factory.*',
-            '**/Dagger*Component*.*',
-            '**/Dagger*Subcomponent*.*',
             '**/devsettings/**/*.*'
     ]
 
@@ -302,6 +299,5 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDevDebugUnitTest', 'c
 
 // Kotlin plugin for testing
 allOpen {
-    annotation('dagger.Module')
     annotation("com.mycompany.myapp.Mockable")
 }

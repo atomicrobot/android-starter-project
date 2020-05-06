@@ -1,8 +1,6 @@
 package com.mycompany.myapp.app
 
 import com.mycompany.myapp.data.OkHttpSecurityModifier
-import dagger.Module
-import dagger.Provides
 import okhttp3.OkHttpClient
 
 @Module
