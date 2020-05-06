@@ -2,7 +2,6 @@ package {{package}}.ui.{{screenLowerCase}}
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.ActivityTestRule
-import {{package}}.MainApplicationDaggerMockRule
 
 import org.junit.Rule
 import org.junit.Test
@@ -10,8 +9,6 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class {{screenUpperCamel}}ActivityEspressoTests {
-
-    @JvmField @Rule val mockitoRule = MainApplicationDaggerMockRule()
 
     @JvmField @Rule val activityRule = ActivityTestRule<{{screenUpperCamel}}Activity>({{screenUpperCamel}}Activity::class.java, false, false)
 
