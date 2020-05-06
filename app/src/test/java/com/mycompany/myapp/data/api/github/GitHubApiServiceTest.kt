@@ -1,23 +1,43 @@
 package com.mycompany.myapp.data.api.github
 
+import android.app.Instrumentation
+import android.content.Context
+import com.mycompany.myapp.CoroutinesTestRule
 import com.mycompany.myapp.data.DataModule
 import com.mycompany.myapp.data.api.github.model.Commit
 import com.mycompany.myapp.loadResourceAsString
-import io.reactivex.observers.TestObserver
+import io.mockk.mockk
+import kotlinx.coroutines.test.runBlockingTest
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.koin.android.ext.koin.androidContext
+import org.koin.test.KoinTest
+import org.koin.test.KoinTestRule
+import org.koin.test.inject
 import retrofit2.Response
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
 
-class GitHubApiServiceTest {
+class GitHubApiServiceTest: KoinTest {
 
     private lateinit var server: MockWebServer
+
+    @get:Rule
+    val coroutinesTestRule = CoroutinesTestRule()
+
+    @get:Rule
+    val koinTestResult = KoinTestRule.create {
+        androidContext(mockk<Context>(relaxed = true)) // TODO provide proper context
+        modules(DataModule)
+    }
+
+    val api: GitHubApiService by inject()
 
     @Before
     fun setup() {
@@ -32,23 +52,17 @@ class GitHubApiServiceTest {
 
     @Test
     @Throws(Exception::class)
-    fun testListCommitsSuccessful() {
+    fun testListCommitsSuccessful() = coroutinesTestRule.testDispatcher.runBlockingTest {
         server.enqueue(MockResponse().setBody("/api/listCommits_success.json".loadResourceAsString()))
         server.start()
 
-        val api = buildApi(server)
-        val subscriber = TestObserver<Response<List<Commit>>>()
-        api.listCommits("test_user", "test_repository").subscribe(subscriber)
-        subscriber.await(1, TimeUnit.SECONDS)
+
+        val response = api.listCommits("test_user", "test_repository")
 
         val serverRequest = server.takeRequest()
         assertEquals("GET", serverRequest.method)
         assertEquals("/repos/test_user/test_repository/commits", serverRequest.path)
 
-        subscriber.assertNoErrors()
-        subscriber.assertComplete()
-        subscriber.assertValueCount(1)
-        val response = subscriber.values()[0]
         assertTrue(response.isSuccessful)
         val commits = response.body()
         assertEquals(1, commits!!.size.toLong())
@@ -59,50 +73,22 @@ class GitHubApiServiceTest {
 
     @Test
     @Throws(Exception::class)
-    fun testListCommitsUnsuccessful() {
+    fun testListCommitsUnsuccessful() = coroutinesTestRule.testDispatcher.runBlockingTest {
         server.enqueue(MockResponse().setResponseCode(404).setBody("{\"message\": \"Not Found\"}"))
         server.start()
 
-        val api = buildApi(server)
-        val subscriber = TestObserver<Response<List<Commit>>>()
-        api.listCommits("test_user", "test_repository").subscribe(subscriber)
-        subscriber.await(1, TimeUnit.SECONDS)
+        val response = api.listCommits("test_user", "test_repository")
 
-        subscriber.assertNoErrors()
-        subscriber.assertComplete()
-        subscriber.assertValueCount(1)
-        val response = subscriber.values()[0]
+
         assertFalse(response.isSuccessful)
         assertEquals(404, response.code().toLong())
     }
 
     @Test
     @Throws(Exception::class)
-    fun testListCommitsNetworkError() {
-        val api = buildApi("http://bad_url/")
-        val subscriber = TestObserver<Response<List<Commit>>>()
-        api.listCommits("test_user", "test_repository").subscribe(subscriber)
-        subscriber.await(1, TimeUnit.SECONDS)
-
-        subscriber.assertNoValues()
-        assertEquals(1, subscriber.errors().size.toLong())
-        val error = subscriber.errors()[0]
-        assertTrue(error is UnknownHostException)
+    fun testListCommitsNetworkError() = coroutinesTestRule.testDispatcher.runBlockingTest {
+        val response = api.listCommits("test_user", "test_repository")
+       assertTrue( response.errorBody() is UnknownHostException)
         // Note: You can't compare message text because that will be provided by the underlying runtime
-    }
-
-    @Throws(Exception::class)
-    private fun buildApi(server: MockWebServer): GitHubApiService {
-        val baseUrl = server.url("")
-        return buildApi(baseUrl.toString())
-    }
-
-    @Throws(Exception::class)
-    private fun buildApi(baseUrl: String): GitHubApiService {
-        val module = DataModule()
-        val client = OkHttpClient.Builder().build()
-        val converterFactory = module.provideConverter()
-        val retrofit = module.provideRetrofit(client, baseUrl, converterFactory)
-        return module.provideGitHubApiService(retrofit)
     }
 }

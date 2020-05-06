@@ -24,7 +24,7 @@ interface OkHttpSecurityModifier {
 val DataModule = module {
 
     single {
-        val cacheDir = File(androidApplication().cacheDir, "http")
+        val cacheDir = File(androidContext().cacheDir, "http")
         Cache(cacheDir, get<Long>(named("diskCacheSize")).toLong())
     }
 

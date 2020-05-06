@@ -1,11 +1,12 @@
 package com.mycompany.myapp
 
 import android.os.Bundle
-import com.nhaarman.mockito_kotlin.whenever
+import io.mockk.every
+import io.mockk.mockkClass
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.mockito.Mockito.mock
+
 
 class SimpleTests {
     @Test
@@ -15,8 +16,8 @@ class SimpleTests {
 
     @Test
     fun testMocking() {
-        val mockBundle = mock(Bundle::class.java)
-        whenever(mockBundle.getString("key")).thenReturn("value")
+        val mockBundle = mockkClass(Bundle::class)
+        every { mockBundle.getString("key") } returns ("value")
 
         val value = mockBundle.getString("key")
         assertEquals("value", value)

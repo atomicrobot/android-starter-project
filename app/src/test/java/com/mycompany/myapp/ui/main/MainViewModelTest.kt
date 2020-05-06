@@ -3,34 +3,40 @@ package com.mycompany.myapp.ui.main
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.mycompany.myapp.TrampolineSchedulerRule
+import com.mycompany.myapp.CoroutinesTestRule
 import com.mycompany.myapp.data.api.github.GitHubInteractor
+import com.mycompany.myapp.data.api.github.GitHubInteractor.LoadCommitsResponse
 import com.mycompany.myapp.data.api.github.model.Commit
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.whenever
-import io.reactivex.Observable
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
+import com.mycompany.myapp.util.state.AsyncState
+import io.mockk.impl.annotations.MockK
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.Mockito.mock
-import org.mockito.MockitoAnnotations
+import io.mockk.MockKAnnotations
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runBlockingTest
+import org.junit.Assert.*
 
+
+@ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
 class MainViewModelTest {
 
-    @JvmField @Rule val trampolineSchedulerRule = TrampolineSchedulerRule()
-
-    @Mock private lateinit var githubInteractor: GitHubInteractor
+    @MockK
+    private lateinit var githubInteractor: GitHubInteractor
 
     private lateinit var viewModel: MainViewModel
 
+    @get:Rule
+    val coroutinesTestRule = CoroutinesTestRule()
+
     @Before
     fun setup() {
-        MockitoAnnotations.initMocks(this)
+        MockKAnnotations.init(this)
 
         val app = ApplicationProvider.getApplicationContext<Application>()
         viewModel = MainViewModel(
@@ -83,14 +89,18 @@ class MainViewModelTest {
     }
 
     @Test
-    fun testFetchCommits() {
-        val mockResult = mock(GitHubInteractor.LoadCommitsResponse::class.java)
-        val mockCommit = mock(Commit::class.java)
-        whenever(mockResult.commits).thenReturn(listOf(mockCommit))
-        whenever(githubInteractor.loadCommits(any())).thenReturn(Observable.just(mockResult))
+    fun testFetchCommits() = coroutinesTestRule.testDispatcher.runBlockingTest {
+        val mockResult = mockk<LoadCommitsResponse>()
+        val mockCommit = mockk<Commit>()
 
-        assertTrue((viewModel.commits as? MainViewModel.Commits.Result)?.commits?.isEmpty() ?: false)
+        every { mockResult.commits } returns listOf(mockCommit)
+        coEvery { githubInteractor.loadCommits(any()) } returns(Result.success(mockResult))
+
+        assertEquals(AsyncState.Idle, viewModel.commits)
         viewModel.fetchCommits()
-        assertTrue((viewModel.commits as? MainViewModel.Commits.Result)?.commits?.size == 1)
+         assertTrue(viewModel.commits  is AsyncState.Success)
+        (viewModel.commits as AsyncState.Success).let {
+            assertEquals(listOf(mockCommit), it.value)
+        }
     }
 }
