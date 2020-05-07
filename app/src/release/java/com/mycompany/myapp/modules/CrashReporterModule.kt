@@ -5,9 +5,7 @@ import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
 
-@Module
-class CrashReporterModule {
-    @Singleton
-    @Provides
-    fun provideCrashReporter() = CrashlyticsCrashReporter()
+val CrashReporterModule = module {
+    single<provideCrashReporter> { CrashlyticsCrashReporter() }
+
 }
