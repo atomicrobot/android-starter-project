@@ -3,33 +3,35 @@ package com.mycompany.myapp.data.api.github
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.mycompany.myapp.CoroutinesTestRule
 import com.mycompany.myapp.data.api.github.GitHubInteractor.LoadCommitsRequest
-import com.mycompany.myapp.data.api.github.GitHubInteractor.LoadCommitsResponse
 import com.mycompany.myapp.data.api.github.model.CommitTestHelper.stubCommit
-import com.nhaarman.mockito_kotlin.whenever
-import io.reactivex.Single
-import io.reactivex.observers.TestObserver
+import io.mockk.MockKAnnotations
+import io.mockk.coEvery
+import io.mockk.impl.annotations.RelaxedMockK
+import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert.assertEquals
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.anyString
-import org.mockito.Mock
-import org.mockito.MockitoAnnotations
 import retrofit2.Response
 import java.util.Arrays.asList
-import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
 class GitHubInteractorTest {
 
-    @Mock lateinit var api: GitHubApiService
+    @get:Rule
+    val coroutinesTestRule = CoroutinesTestRule()
+
+    @RelaxedMockK
+    lateinit var api: GitHubApiService
 
     private lateinit var interactor: GitHubInteractor
 
     @Before
     fun setup() {
-        MockitoAnnotations.initMocks(this)
+        MockKAnnotations.init(this)
 
         val context = ApplicationProvider.getApplicationContext<Application>()
         interactor = GitHubInteractor(context, api)
@@ -37,24 +39,17 @@ class GitHubInteractorTest {
 
     @Test
     @Throws(Exception::class)
-    fun testLoadCommits() {
-        val mockResponse = Single.just(Response.success(asList(stubCommit("test name", "test message"))))
-        whenever(api.listCommits(anyString(), anyString())).thenReturn(mockResponse)
+    fun testLoadCommits() = coroutinesTestRule.testDispatcher.runBlockingTest {
+        val mockResponse = Response.success(asList(stubCommit("test name", "test message")))
+        coEvery { api.listCommits(any(), any()) } returns mockResponse
 
-        val subscriber = TestObserver<LoadCommitsResponse>()
-        interactor.loadCommits(LoadCommitsRequest("user", "repo")).subscribeWith(subscriber)
-        subscriber.await(1, TimeUnit.SECONDS)
+        val response = interactor.loadCommits(LoadCommitsRequest("user", "repo"))
 
-        subscriber.assertValueCount(1)
-        subscriber.assertNoErrors()
-        subscriber.assertComplete()
+        assertEquals("user", response.getOrThrow().request.user)
+        assertEquals("repo", response.getOrThrow().request.repository)
+        assertEquals(1, response.getOrThrow().commits.size.toLong())
 
-        val response = subscriber.values()[0]
-        assertEquals("user", response.request.user)
-        assertEquals("repo", response.request.repository)
-        assertEquals(1, response.commits.size.toLong())
-
-        val commit = response.commits[0]
+        val commit = response.getOrThrow().commits[0]
         assertEquals("test name", commit.author)
         assertEquals("test message", commit.commitMessage)
     }

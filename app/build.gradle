@@ -19,7 +19,7 @@ repositories {
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-kapt'
+
 apply plugin: 'kotlin-allopen'
 apply plugin: 'kotlin-android-extensions'
 
@@ -29,6 +29,7 @@ apply plugin: 'io.fabric'
 apply plugin: 'pmd'
 apply plugin: 'checkstyle'
 apply plugin: 'jacoco'
+apply plugin: 'kotlin-kapt'
 
 apply plugin: 'com.github.ben-manes.versions'
 
@@ -147,7 +148,7 @@ ext {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    kapt "androidx.databinding:databinding-compiler:$rootProject.ext.android_plugin_version"
+    annotationProcessor "androidx.databinding:databinding-compiler:$rootProject.ext.android_plugin_version"
     // Need this because of Kotlin
 
     // Android/Google libraries
@@ -173,7 +174,7 @@ dependencies {
 
     // JSON
     implementation 'com.squareup.moshi:moshi:1.9.2'
-    kapt 'com.squareup.moshi:moshi-kotlin-codegen:1.9.2'
+    annotationProcessor 'com.squareup.moshi:moshi-kotlin-codegen:1.9.2'
 
     // Networking - HTTP
     implementation "com.squareup.okhttp3:okhttp:$okHttpVersion"
@@ -185,6 +186,8 @@ dependencies {
 
     // Monitoring - Timber (logging)
     implementation 'com.jakewharton.timber:timber:4.7.1'
+
+
 
     // Monitoring - Crashlytics
     implementation('com.crashlytics.sdk.android:crashlytics:2.10.1@aar') {
@@ -203,6 +206,9 @@ dependencies {
     testImplementation 'org.robolectric:robolectric:4.3.1'
     testImplementation "com.squareup.okhttp3:mockwebserver:$okHttpVersion"
     testImplementation "io.mockk:mockk:1.9.3"
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.3.0-M1'
+    testImplementation "org.koin:koin-test:$koinVersion"
+
 
 
     // Android JUnit Runner, JUnit Rules, and Espresso
@@ -213,6 +219,7 @@ dependencies {
     androidTestImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
     androidTestImplementation "androidx.test.espresso:espresso-contrib:$espressoVersion"
     androidTestImplementation "io.mockk:mockk-android:1.9.3"
+
 
 
 }

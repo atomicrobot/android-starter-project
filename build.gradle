@@ -80,8 +80,8 @@ ext {
 
     // Build settings that are likely to be reused across different modules
     minSdkVersion = 24
-    targetSdkVersion = 28
-    compileSdkVersion = 28
+    targetSdkVersion = 29
+    compileSdkVersion = 29
 }
 
 evaluationDependsOnChildren()
@@ -97,10 +97,12 @@ task initialCleanup() {
 task staticAnalysis {
     def appProject = subprojects.find { project -> 'app' == project.name }
 
+    def findBugsTasks = getProjectTask(appProject, 'findbugs')
     def pmdTasks = getProjectTask(appProject, 'pmd')
     def lintTasks = getProjectTask(appProject, 'lint')
     def checkstyleTasks = getProjectTask(appProject, 'checkstyle')
 
+    dependsOn findBugsTasks
     dependsOn pmdTasks
     dependsOn lintTasks
     dependsOn checkstyleTasks

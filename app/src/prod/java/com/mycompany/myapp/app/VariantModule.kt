@@ -2,15 +2,21 @@ package com.mycompany.myapp.app
 
 import com.mycompany.myapp.data.OkHttpSecurityModifier
 import okhttp3.OkHttpClient
+import org.koin.android.ext.koin.androidApplication
+import org.koin.android.ext.koin.androidContext
+import org.koin.dsl.module
 
-@Module
-class VariantModule {
+val VariantModule = module {
+    single<Settings> {
+        Settings(androidContext())
+    }
 
-    @Provides
-    fun provideOkHttpClientTrustAllBinding(settings: Settings): OkHttpSecurityModifier {
-        return object: OkHttpSecurityModifier {
+    single { MainApplicationInitializer(application = androidApplication(), logger = get()) }
+
+    single<OkHttpSecurityModifier> {
+        object : OkHttpSecurityModifier {
             override fun apply(builder: OkHttpClient.Builder) {
-                /* No op */
+               // no op
             }
         }
     }
