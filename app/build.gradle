@@ -230,7 +230,7 @@ dependencies {
 //https://github.com/atomicrobot/Carbon-Android/issues/87
 task findbugs(type: FindBugs, dependsOn: "assembleDebug") {
     excludeFilter file("${project.rootDir}/config/findbugs/exclude.xml")
-    classes = fileTree('build/intermediates/javac/devDebug/compileDevDebugJavaWithJavac/classes/')
+    classes = fileTree('build/intermediates/javac/devDebug/classes/')
     source = fileTree('src/main/java/')
     classpath = files()
     effort = 'max'
