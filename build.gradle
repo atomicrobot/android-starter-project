@@ -16,8 +16,12 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlin:kotlin-allopen:$kotlin_version"
         classpath "org.jacoco:org.jacoco.core:$jacoco_version"
-        classpath "org.jlleitschuh.gradle:ktlint-gradle:7.1.0"
+        classpath "org.jlleitschuh.gradle:ktlint-gradle:9.2.1"
     }
+}
+
+subprojects {
+    apply plugin: "org.jlleitschuh.gradle.ktlint"
 }
 
 allprojects {
@@ -30,7 +34,6 @@ allprojects {
 
     // Automatically pull down javadocs and sources (if available)
     apply plugin: 'idea'
-    apply plugin: "org.jlleitschuh.gradle.ktlint"
     idea {
         module {
             downloadJavadoc = true
@@ -41,6 +44,14 @@ allprojects {
     // Verbose output for usage of deprecated APIs
     tasks.withType(JavaCompile) {
         options.compilerArgs << "-Xlint:deprecation"
+    }
+}
+
+allprojects {
+    configurations.all {
+        resolutionStrategy {
+            force("org.objenesis:objenesis:2.6")
+        }
     }
 }
 
@@ -97,11 +108,9 @@ task initialCleanup() {
 task staticAnalysis {
     def appProject = subprojects.find { project -> 'app' == project.name }
 
-    def pmdTasks = getProjectTask(appProject, 'pmd')
     def lintTasks = getProjectTask(appProject, 'lint')
-    def checkstyleTasks = getProjectTask(appProject, 'checkstyle')
+    def checkstyleTasks = getProjectTask(appProject, 'ktlintCheck')
 
-    dependsOn pmdTasks
     dependsOn lintTasks
     dependsOn checkstyleTasks
 }

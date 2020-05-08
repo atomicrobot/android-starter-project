@@ -2,7 +2,11 @@ package com.mycompany.myapp.data.api.github
 
 import android.app.Instrumentation
 import android.content.Context
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.errorprone.annotations.Var
 import com.mycompany.myapp.CoroutinesTestRule
+import com.mycompany.myapp.app.VariantModule
 import com.mycompany.myapp.data.DataModule
 import com.mycompany.myapp.data.api.github.model.Commit
 import com.mycompany.myapp.loadResourceAsString
@@ -16,15 +20,21 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.koin.android.ext.koin.androidContext
+import org.koin.core.qualifier.named
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
 import org.koin.test.inject
+import org.koin.test.mock.MockProviderRule
+import org.koin.test.mock.declare
+import org.koin.test.mock.declareMock
 import retrofit2.Response
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
 
-class GitHubApiServiceTest: KoinTest {
+@RunWith(AndroidJUnit4::class)
+class GitHubApiServiceTest : KoinTest {
 
     private lateinit var server: MockWebServer
 
@@ -32,9 +42,9 @@ class GitHubApiServiceTest: KoinTest {
     val coroutinesTestRule = CoroutinesTestRule()
 
     @get:Rule
-    val koinTestResult = KoinTestRule.create {
-        androidContext(mockk<Context>(relaxed = true)) // TODO provide proper context
-        modules(DataModule)
+    val koinTestRule = KoinTestRule.create {
+        androidContext(ApplicationProvider.getApplicationContext<Context>())
+        modules(VariantModule, DataModule)
     }
 
     val api: GitHubApiService by inject()
@@ -42,6 +52,7 @@ class GitHubApiServiceTest: KoinTest {
     @Before
     fun setup() {
         server = MockWebServer()
+        declare<String>(named("baseUrl")) { server.url("").toString() }
     }
 
     @After
@@ -54,8 +65,6 @@ class GitHubApiServiceTest: KoinTest {
     @Throws(Exception::class)
     fun testListCommitsSuccessful() = coroutinesTestRule.testDispatcher.runBlockingTest {
         server.enqueue(MockResponse().setBody("/api/listCommits_success.json".loadResourceAsString()))
-        server.start()
-
 
         val response = api.listCommits("test_user", "test_repository")
 
@@ -88,7 +97,7 @@ class GitHubApiServiceTest: KoinTest {
     @Throws(Exception::class)
     fun testListCommitsNetworkError() = coroutinesTestRule.testDispatcher.runBlockingTest {
         val response = api.listCommits("test_user", "test_repository")
-       assertTrue( response.errorBody() is UnknownHostException)
+        assertTrue(response.errorBody() is UnknownHostException)
         // Note: You can't compare message text because that will be provided by the underlying runtime
     }
 }

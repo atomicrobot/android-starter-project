@@ -1,6 +1,7 @@
 package com.mycompany.myapp.data.api.github
 
 import android.content.Context
+import android.util.Log
 import com.mycompany.myapp.R
 import com.mycompany.myapp.data.api.github.model.Commit
 
