@@ -1,9 +1,9 @@
 package com.mycompany.myapp.monitoring
 
-import com.mycompany.myapp.monitoring.model.NoOpTree
+import org.koin.dsl.module
 import timber.log.Timber
-import javax.inject.Singleton
+import timber.log.Timber.DebugTree
 
 val LoggerModule = module {
-    single<Timber.Tree> { NoOpTree() }
+    single<Timber.Tree> { DebugTree() }
 }

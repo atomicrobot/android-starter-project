@@ -1,9 +1,9 @@
 package com.mycompany.myapp.modules
 
-import com.mycompany.myapp.monitoring.CrashlyticsCrashReporter
-import javax.inject.Singleton
+import com.mycompany.myapp.monitoring.CrashReporter
+import com.mycompany.myapp.monitoring.LoggingOnlyCrashReporter
+import org.koin.dsl.module
 
 val CrashReporterModule = module {
-    single<provideCrashReporter> { CrashlyticsCrashReporter() }
-
+    single<CrashReporter> { LoggingOnlyCrashReporter() }
 }
