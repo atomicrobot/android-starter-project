@@ -7,7 +7,7 @@ import com.atomicrobot.carbon.ui.NavigationEvent
 import kotlinx.android.parcel.Parcelize
 import javax.inject.Inject
 
-class SplashViewModel @Inject constructor(
+class SplashViewModel(
         private val app: Application)
     : BaseViewModel<SplashViewModel.State>(app, STATE_KEY, State()) {
 

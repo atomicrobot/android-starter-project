@@ -133,7 +133,7 @@ ext {
     supportVersion = '1.0.0'
     playServicesVersion = '17.1.0'
     lifecycleVersion = '2.0.0'
-    daggerVersion = '2.20'
+    koinVersion = '3.0.2'
     retrofitVersion = '2.4.0'
     okHttpVersion = '3.11.0'
     leakcanaryVersion = '1.5.4'
@@ -175,9 +175,8 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycleVersion"
     implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion"
 
-    // App architecture - Dagger 2
-    implementation "com.google.dagger:dagger:$daggerVersion"
-    kapt "com.google.dagger:dagger-compiler:$daggerVersion"
+    // App architecture - Koin 3
+    implementation "io.insert-koin:koin-android:$koinVersion"
 
     // App architecture - RxJava
     implementation 'io.reactivex.rxjava2:rxjava:2.2.7'

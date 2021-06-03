@@ -11,7 +11,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.atomicrobot.carbon.CommitItemBinding
 import com.atomicrobot.carbon.data.api.github.model.Commit
 import com.atomicrobot.carbon.databinding.FragmentMainBinding
-import com.atomicrobot.carbon.ui.BaseFragment
 import com.atomicrobot.carbon.ui.SimpleSnackbarMessage
 import com.atomicrobot.carbon.util.recyclerview.ArrayAdapter
 

@@ -3,7 +3,6 @@ package com.atomicrobot.carbon
 import com.atomicrobot.carbon.TestUtils.getAppUnderTest
 import com.atomicrobot.carbon.app.AndroidModule
 import com.atomicrobot.carbon.app.AppModule
-import com.atomicrobot.carbon.app.ApplicationComponent
 import com.atomicrobot.carbon.app.VariantModule
 import com.atomicrobot.carbon.data.DataModule
 import com.atomicrobot.carbon.modules.CrashReporterModule

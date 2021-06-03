@@ -16,10 +16,9 @@ import com.atomicrobot.carbon.util.RxUtils.delayAtLeast
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.parcel.Parcelize
-import javax.inject.Inject
 import javax.inject.Named
 
-class MainViewModel @Inject constructor(
+class MainViewModel(
         private val app: Application,
         private val gitHubInteractor: GitHubInteractor,
         @Named("loading_delay_ms") private val loadingDelayMs: Long)

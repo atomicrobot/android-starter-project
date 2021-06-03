@@ -7,17 +7,11 @@ import com.atomicrobot.carbon.app.MainApplicationInitializer
 import javax.inject.Inject
 
 open class MainApplication : Application() {
-    lateinit var component: ApplicationComponent
-    @set:VisibleForTesting
-
     @Inject lateinit var initializer: MainApplicationInitializer
 
     override fun onCreate() {
         super.onCreate()
-        component = DaggerApplicationComponent.builder()
-                .androidModule(AndroidModule(this))
-                .build()
-        component.inject(this)
+
 
         initializeApplication()
     }
